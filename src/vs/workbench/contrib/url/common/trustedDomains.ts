@@ -34,9 +34,9 @@ export async function configureOpenerTrustedDomainsHandler(
 	editorService: IEditorService
 ) {
 	const parsedDomainToConfigure = URI.parse(domainToConfigure);
-	const toplevelDomainSegements = domainToConfigure.split('.');
+	const toplevelDomainSegements = parsedDomainToConfigure.authority.split('.');
 	const domainEnd = toplevelDomainSegements.slice(toplevelDomainSegements.length - 2).join('.');
-	const topLevelDomain = parsedDomainToConfigure.scheme + '://' + '*.' + domainEnd;
+	const topLevelDomain = '*.' + domainEnd;
 
 	const trustDomainAndOpenLinkItem: IQuickPickItem = {
 		type: 'item',
@@ -46,14 +46,13 @@ export async function configureOpenerTrustedDomainsHandler(
 	};
 	const trustSubDomainAndOpenLinkItem: IQuickPickItem = {
 		type: 'item',
-		label: localize('trustedDomain.trustSubDomain', 'Trust all domains ending in {0}', domainEnd),
+		label: localize('trustedDomain.trustSubDomain', 'Trust {0} and all its subdomains', domainEnd),
 		id: topLevelDomain
 	};
 	const openAllLinksItem: IQuickPickItem = {
 		type: 'item',
 		label: localize('trustedDomain.trustAllDomains', 'Trust all domains (disables link protection)'),
-		id: '*',
-		picked: trustedDomains.indexOf('*') !== -1
+		id: '*'
 	};
 	const manageTrustedDomainItem: IQuickPickItem = {
 		type: 'item',
@@ -95,7 +94,7 @@ export function readTrustedDomains(storageService: IStorageService, productServi
 		? [...productService.linkProtectionTrustedDomains]
 		: [];
 
-	let trustedDomains = [];
+	let trustedDomains: string[] = [];
 	try {
 		const trustedDomainsSrc = storageService.get('http.linkProtectionTrustedDomains', StorageScope.GLOBAL);
 		if (trustedDomainsSrc) {
